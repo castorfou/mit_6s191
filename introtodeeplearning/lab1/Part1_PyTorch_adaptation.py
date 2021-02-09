@@ -29,45 +29,65 @@
 #
 
 
-# # Lab 1: Intro to TensorFlow and Music Generation with RNNs
+# # Transpose lab examples from Tensorflow to Pytorch
+
+# This is my intent as an exercise to move all materials provided by MIT to pytorch framework. I think it will help me to better understand both frameworks. All materials are provided by MIT and is under the MIT license. And this is entirely coming from MIT 6.S191.
 # 
-# In this lab, you'll get exposure to using TensorFlow and learn how it can be used for solving deep learning tasks. Go through the code and run each cell. Along the way, you'll encounter several ***TODO*** blocks -- follow the instructions to fill them out before running those cells and continuing.
+# Most of the time in markdown entries I will replace Tensorflow with Pytorch, and when necessarely I will transpose tensorflow concepts to pytorch ones.
+# 
+# All the original text is from MIT and credit is for © MIT 6.S191: Introduction to Deep Learning http://introtodeeplearning.com
+
+# # Lab 1: Intro to PyTorch and Music Generation with RNNs
+# 
+# In this lab, you'll get exposure to using PyTorch and learn how it can be used for solving deep learning tasks. Go through the code and run each cell. Along the way, you'll encounter several ***TODO*** blocks -- follow the instructions to fill them out before running those cells and continuing.
 # 
 # 
-# # Part 1: Intro to TensorFlow
+# # Part 1: Intro to PyTorch
 # 
-# ## 0.1 Install TensorFlow
+# ## 0.1 Install PyTorch
 # 
-# TensorFlow is a software library extensively used in machine learning. Here we'll learn how computations are represented and how to define a simple neural network in TensorFlow. For all the labs in 6.S191 2021, we'll be using the latest version of TensorFlow, TensorFlow 2, which affords great flexibility and the ability to imperatively execute operations, just like in Python. You'll notice that TensorFlow 2 is quite similar to Python in its syntax and imperative execution. Let's install TensorFlow and a couple of dependencies.
+# PyTorch is a software library extensively used in machine learning. Here we'll learn how computations are represented and how to define a simple neural network in PyTorch. For all the labs in 6.S191 2021, we'll be using the PyTorch v1.4, which affords great flexibility and the ability to imperatively execute operations, just like in Python. You'll notice that PyTorch is quite similar to Python in its syntax and imperative execution. Let's install PyTorch and a couple of dependencies.
 # 
 
-# In[24]:
+# In[2]:
 
 
 get_ipython().system('cat ../../env.txt')
 
 
-# In[2]:
+# In[3]:
 
 
-# %tensorflow_version 2.x
-import tensorflow as tf
+get_ipython().system('conda list|grep torch')
+
+
+# In[4]:
+
+
+import torch
+import numpy as np
 
 # Download and import the MIT 6.S191 package
 get_ipython().system('pip install mitdeeplearning')
 import mitdeeplearning as mdl
 
-import numpy as np
 import matplotlib.pyplot as plt
 
 
-# ## 1.1 Why is TensorFlow called TensorFlow?
+# ## 1.1 Why is PyTorch called PyTorch?
 # 
-# TensorFlow is called 'TensorFlow' because it handles the flow (node/mathematical operation) of Tensors, which are data structures that you can think of as multi-dimensional arrays. Tensors are represented as n-dimensional arrays of base dataypes such as a string or integer -- they provide a way to generalize vectors and matrices to higher dimensions.
+# The answer is not obvious (not as in TensorFlow or Keras). Looks like a possible explanation in stackoverflow: https://stackoverflow.com/a/52708294/9922126
+# 
+# > it could be derived from SMOrch algorithm. Light + Smorch = Torch. And Py from Python of course. 
+# 
+# Anyway PyTorch is dealing with Tensors, which are data structures that you can think of as multi-dimensional arrays. Tensors are represented as n-dimensional arrays of base dataypes such as a string or integer -- they provide a way to generalize vectors and matrices to higher dimensions.
 # 
 # The ```shape``` of a Tensor defines its number of dimensions and the size of each dimension. The ```rank``` of a Tensor provides the number of dimensions (n-dimensions) -- you can also think of this as the Tensor's order or degree.
-# 
+
+# ### scalar
 # Let's first look at 0-d Tensors, of which a scalar is an example:
+
+# #### from TensorFlow
 
 # In[3]:
 
@@ -79,7 +99,27 @@ print("`sport` is a {}-d Tensor".format(tf.rank(sport).numpy()))
 print("`number` is a {}-d Tensor".format(tf.rank(number).numpy()))
 
 
-# Vectors and lists can be used to create 1-d Tensors:
+# #### to PyTorch
+
+# In[7]:
+
+
+#this is not possible to store non-scalar item in tensors with pytorch (contrary to tensorflow)
+sport = torch.tensor('Tennis')
+
+
+# In[12]:
+
+
+number = torch.tensor(1.41421356237, dtype=torch.float64)
+
+print("`number` is a {}-d Tensor".format(len(number.shape)))
+
+
+# ### Vectors and lists 
+# can be used to create 1-d Tensors:
+
+# #### from TensorFlow
 
 # In[4]:
 
@@ -91,7 +131,29 @@ print("`sports` is a {}-d Tensor with shape: {}".format(tf.rank(sports).numpy(),
 print("`numbers` is a {}-d Tensor with shape: {}".format(tf.rank(numbers).numpy(), tf.shape(numbers)))
 
 
+# #### to PyTorch
+
+# In[19]:
+
+
+data = [3.141592, 1.414213, 2.71821]
+numbers = torch.tensor(data, dtype=torch.float64)
+print("`numbers` is a {}-d Tensor with shape: {}".format(len(numbers.shape), list(numbers.shape)))
+
+
+# we can use `.size()` as an alternative to `.shape`
+
+# In[22]:
+
+
+numbers.size()
+
+
+# ### 2-d (matrices) and higher-rank Tensors
+
 # Next we consider creating 2-d (i.e., matrices) and higher-rank Tensors. For examples, in future labs involving image processing and computer vision, we will use 4-d Tensors. Here the dimensions correspond to the number of example images in our batch, image height, image width, and the number of color channels.
+
+# #### from TensorFlow
 
 # In[5]:
 
@@ -118,9 +180,47 @@ assert tf.rank(images).numpy() == 4, "matrix must be of rank 4"
 assert tf.shape(images).numpy().tolist() == [10, 256, 256, 3], "matrix is incorrect shape"
 
 
+# #### to PyTorch
+
+# In[24]:
+
+
+### Defining higher-order Tensors ###
+
+matrix = torch.tensor([[3.141592, 1.414213, 2.71821], [3.141592, 1.414213, 2.71821]], dtype=torch.float64)
+
+matrix
+
+
+# In[25]:
+
+
+type(matrix)
+
+
+# In[26]:
+
+
+len(matrix.shape)
+
+
+# In[30]:
+
+
+'''TODO: Define a 4-d Tensor.'''
+# Use torch.zeros(shape) to initialize a 4-d Tensor of zeros with size 10 x 256 x 256 x 3. 
+#   You can think of this as 10 images where each image is RGB 256 x 256.
+
+images = torch.zeros((10, 256, 256, 3),dtype=torch.float64)# TODO
+
+assert isinstance(images, torch.Tensor), "images must be a torch Tensor object"
+assert len(images.shape) == 4, "images must be of rank 4"
+assert list(images.shape) == [10, 256, 256, 3], "images is incorrect shape"
+
+
 # As you have seen, the ```shape``` of a Tensor provides the number of elements in each Tensor dimension. The ```shape``` is quite useful, and we'll use it often. You can also use slicing to access subtensors within a higher-rank Tensor:
 
-# In[7]:
+# In[31]:
 
 
 row_vector = matrix[1]
