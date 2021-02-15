@@ -41,13 +41,13 @@
 # TensorFlow is a software library extensively used in machine learning. Here we'll learn how computations are represented and how to define a simple neural network in TensorFlow. For all the labs in 6.S191 2021, we'll be using the latest version of TensorFlow, TensorFlow 2, which affords great flexibility and the ability to imperatively execute operations, just like in Python. You'll notice that TensorFlow 2 is quite similar to Python in its syntax and imperative execution. Let's install TensorFlow and a couple of dependencies.
 # 
 
-# In[24]:
+# In[2]:
 
 
 get_ipython().system('cat ../../env.txt')
 
 
-# In[2]:
+# In[3]:
 
 
 # %tensorflow_version 2.x
@@ -69,7 +69,7 @@ import matplotlib.pyplot as plt
 # 
 # Let's first look at 0-d Tensors, of which a scalar is an example:
 
-# In[3]:
+# In[4]:
 
 
 sport = tf.constant("Tennis", tf.string)
@@ -81,7 +81,7 @@ print("`number` is a {}-d Tensor".format(tf.rank(number).numpy()))
 
 # Vectors and lists can be used to create 1-d Tensors:
 
-# In[4]:
+# In[5]:
 
 
 sports = tf.constant(["Tennis", "Basketball"], tf.string)
@@ -93,7 +93,7 @@ print("`numbers` is a {}-d Tensor with shape: {}".format(tf.rank(numbers).numpy(
 
 # Next we consider creating 2-d (i.e., matrices) and higher-rank Tensors. For examples, in future labs involving image processing and computer vision, we will use 4-d Tensors. Here the dimensions correspond to the number of example images in our batch, image height, image width, and the number of color channels.
 
-# In[5]:
+# In[6]:
 
 
 ### Defining higher-order Tensors ###
@@ -105,7 +105,7 @@ assert isinstance(matrix, tf.Tensor), "matrix must be a tf Tensor object"
 assert tf.rank(matrix).numpy() == 2
 
 
-# In[6]:
+# In[7]:
 
 
 '''TODO: Define a 4-d Tensor.'''
@@ -120,7 +120,7 @@ assert tf.shape(images).numpy().tolist() == [10, 256, 256, 3], "matrix is incorr
 
 # As you have seen, the ```shape``` of a Tensor provides the number of elements in each Tensor dimension. The ```shape``` is quite useful, and we'll use it often. You can also use slicing to access subtensors within a higher-rank Tensor:
 
-# In[7]:
+# In[8]:
 
 
 row_vector = matrix[1]
@@ -138,7 +138,7 @@ print("`scalar`: {}".format(scalar.numpy()))
 # 
 # ![alt text](https://raw.githubusercontent.com/aamini/introtodeeplearning/master/lab1/img/add-graph.png)
 
-# In[8]:
+# In[9]:
 
 
 # Create the nodes in the graph, and initialize values
@@ -162,7 +162,7 @@ print(c2)
 # 
 # Let's define a simple function in TensorFlow to construct this computation function:
 
-# In[9]:
+# In[10]:
 
 
 ### Defining Tensor computations ###
@@ -180,7 +180,7 @@ def func(a,b):
 
 # Now, we can call this function to execute the computation graph given some inputs `a,b`:
 
-# In[10]:
+# In[11]:
 
 
 # Consider example values for a,b
