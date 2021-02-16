@@ -10,3 +10,4 @@ conda install tensorflow tensorflow-gpu
 conda install -c conda-forge jupyter_contrib_nbextensions
 conda install matplotlib numpy opencv
 conda install -c pytorch torchvision
+conda install nb_conda

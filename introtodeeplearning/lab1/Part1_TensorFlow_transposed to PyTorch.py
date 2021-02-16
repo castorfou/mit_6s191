@@ -52,7 +52,7 @@
 # In[2]:
 
 
-get_ipython().system('cat ../../env.txt')
+get_ipython().system('cat ../../env\\ \\ mit_6S191.txt')
 
 
 # In[3]:
@@ -68,7 +68,7 @@ import torch
 import numpy as np
 
 # Download and import the MIT 6.S191 package
-get_ipython().system('pip install mitdeeplearning')
+# !pip install mitdeeplearning
 import mitdeeplearning as mdl
 
 import matplotlib.pyplot as plt
@@ -356,7 +356,7 @@ print(e_out)
 # returns the ``output``.
 # We will first define a ```Module``` to implement the simple perceptron defined above.
 
-# ### from TensorFlow
+# ### basic from TensorFlow
 
 # In[12]:
 
@@ -400,9 +400,9 @@ print(y.numpy())
 mdl.lab1.test_custom_dense_layer_output(y)
 
 
-# ### to PyTorch
+# ### basic to PyTorch
 
-# In[29]:
+# In[16]:
 
 
 ### Defining a network Layer ###
@@ -416,15 +416,22 @@ class OurDenseLayer(nn.Module):
     def __init__(self, n_output_nodes):
         super(OurDenseLayer, self).__init__()
         self.n_output_nodes = n_output_nodes
-        self.fc = nn.Linear(2, n_output_nodes)  
+#         self.fc = nn.Linear(2, n_output_nodes)
+
+    def build(self, input_shape):
+        d = int(input_shape[-1])
+        
+        self.W = nn.Parameter(torch.rand(d, self.n_output_nodes))
+        self.b = nn.Parameter(torch.rand(1, self.n_output_nodes))
 
     def forward(self, x):
-        x = self.fc(x)
+        x = torch.matmul(x,self.W)+self.b
         x = torch.sigmoid(x)
         return x    
     
 torch.manual_seed(1)
 layer = OurDenseLayer(3)
+layer.build((1,2))
 x_input = torch.tensor([[1,2.]])
 y = layer(x_input)
 
@@ -432,9 +439,11 @@ y = layer(x_input)
 print(y.detach().numpy())
 
 
+# ### Sequential, Dense from Keras -  from TensorFlow
+
 # Conveniently, TensorFlow has defined a number of ```Layers``` that are commonly used in neural networks, for example a [```Dense```](https://www.tensorflow.org/api_docs/python/tf/keras/layers/Dense?version=stable). Now, instead of using a single ```Layer``` to define our simple neural network, we'll use the  [`Sequential`](https://www.tensorflow.org/versions/r2.0/api_docs/python/tf/keras/Sequential) model from Keras and a single [`Dense` ](https://www.tensorflow.org/versions/r2.0/api_docs/python/tf/keras/layers/Dense) layer to define our network. With the `Sequential` API, you can readily create neural networks by stacking together layers like building blocks. 
 
-# In[ ]:
+# In[13]:
 
 
 ### Defining a neural network using the Sequential API ###
@@ -453,7 +462,7 @@ model = Sequential()
 # Remember: dense layers are defined by the parameters W and b!
 # You can read more about the initialization of W and b in the TF documentation :) 
 # https://www.tensorflow.org/api_docs/python/tf/keras/layers/Dense?version=stable
-dense_layer = # TODO
+dense_layer = Dense(n_output_nodes) # TODO
 
 # Add the dense layer to the model
 model.add(dense_layer)
@@ -461,20 +470,20 @@ model.add(dense_layer)
 
 # That's it! We've defined our model using the Sequential API. Now, we can test it out using an example input:
 
-# In[ ]:
+# In[14]:
 
 
 # Test model with example input
 x_input = tf.constant([[1,2.]], shape=(1,2))
 
 '''TODO: feed input into the model and predict the output!'''
-model_output = # TODO
+model_output = model.predict(x_input)# TODO
 print(model_output)
 
 
 # In addition to defining models using the `Sequential` API, we can also define neural networks by directly subclassing the [`Model`](https://www.tensorflow.org/api_docs/python/tf/keras/Model?version=stable) class, which groups layers together to enable model training and inference. The `Model` class captures what we refer to as a "model" or as a "network". Using Subclassing, we can create a class for our model, and then define the forward pass through the network using the `call` function. Subclassing affords the flexibility to define custom layers, custom training loops, custom activation functions, and custom models. Let's define the same neural network as above now using Subclassing rather than the `Sequential` model.
 
-# In[ ]:
+# In[15]:
 
 
 ### Defining a model using subclassing ###
@@ -488,7 +497,7 @@ class SubclassModel(tf.keras.Model):
   def __init__(self, n_output_nodes):
     super(SubclassModel, self).__init__()
     '''TODO: Our model consists of a single Dense layer. Define this layer.''' 
-    self.dense_layer = '''TODO: Dense Layer'''
+    self.dense_layer = Dense(n_output_nodes)
 
   # In the call function, we define the Model's forward pass.
   def call(self, inputs):
@@ -499,7 +508,7 @@ class SubclassModel(tf.keras.Model):
 # 
 # 
 
-# In[ ]:
+# In[16]:
 
 
 n_output_nodes = 3
@@ -512,7 +521,7 @@ print(model.call(x_input))
 
 # Importantly, Subclassing affords us a lot of flexibility to define custom models. For example, we can use boolean arguments in the `call` function to specify different network behaviors, for example different behaviors during training and inference. Let's suppose under some instances we want our network to simply output the input, without any perturbation. We define a boolean argument `isidentity` to control this behavior:
 
-# In[ ]:
+# In[17]:
 
 
 ### Defining a model using subclassing and specifying custom behavior ###
@@ -521,23 +530,25 @@ from tensorflow.keras import Model
 from tensorflow.keras.layers import Dense
 
 class IdentityModel(tf.keras.Model):
+    # As before, in __init__ we define the Model's layers
+    # Since our desired behavior involves the forward pass, this part is unchanged
+    def __init__(self, n_output_nodes):
+        super(IdentityModel, self).__init__()
+        self.dense_layer = tf.keras.layers.Dense(n_output_nodes, activation='sigmoid')
 
-  # As before, in __init__ we define the Model's layers
-  # Since our desired behavior involves the forward pass, this part is unchanged
-  def __init__(self, n_output_nodes):
-    super(IdentityModel, self).__init__()
-    self.dense_layer = tf.keras.layers.Dense(n_output_nodes, activation='sigmoid')
-
-  '''TODO: Implement the behavior where the network outputs the input, unchanged, 
+    '''TODO: Implement the behavior where the network outputs the input, unchanged, 
       under control of the isidentity argument.'''
-  def call(self, inputs, isidentity=False):
-    x = self.dense_layer(inputs)
-    '''TODO: Implement identity behavior'''
+    
+    def call(self, inputs, isidentity=False):
+        x = self.dense_layer(inputs)
+        '''TODO: Implement identity behavior'''
+        if (isidentity): return inputs
+        return x
 
 
 # Let's test this behavior:
 
-# In[ ]:
+# In[20]:
 
 
 n_output_nodes = 3
@@ -545,16 +556,50 @@ model = IdentityModel(n_output_nodes)
 
 x_input = tf.constant([[1,2.]], shape=(1,2))
 '''TODO: pass the input into the model and call with and without the input identity option.'''
-out_activate = # TODO
-out_identity = # TODO
+out_activate = model.call(x_input, False) # TODO
+out_identity = model.call(x_input, True) # TODO
 
 print("Network output with activation: {}; network identity output: {}".format(out_activate.numpy(), out_identity.numpy()))
 
 
 # Now that we have learned how to define `Layers` as well as neural networks in TensorFlow using both the `Sequential` and Subclassing APIs, we're ready to turn our attention to how to actually implement network training with backpropagation.
 
-# ## 1.4 Automatic differentiation in TensorFlow
+# ### to PyTorch : nn vs nn.functional
+
+# I will still have to develop my intuition about that.
+# Some nice explanation in [PyTorch forum](https://discuss.pytorch.org/t/beginner-should-relu-sigmoid-be-called-in-the-init-method/18689/6)
 # 
+# In the following I am using `nn.Module`
+
+# In[22]:
+
+
+import torch
+import torch.nn as nn
+
+
+class Net(nn.Module):
+
+    def __init__(self, n_input_node, n_output_nodes):
+        super(Net, self).__init__()
+        # dense
+        self.fc = nn.Linear(n_input_node, n_output_nodes)
+
+    def forward(self, x):
+        x = self.fc(x)
+        return x
+
+n_output_nodes = 3
+x_input = torch.tensor([1., 2.])
+net = Net(x_input.shape[-1], n_output_nodes)
+
+print(net(x_input))
+
+
+# ## 1.4 Automatic differentiation
+# 
+# 
+# ### from TensorFlow
 # [Automatic differentiation](https://en.wikipedia.org/wiki/Automatic_differentiation)
 # is one of the most important parts of TensorFlow and is the backbone of training with 
 # [backpropagation](https://en.wikipedia.org/wiki/Backpropagation). We will use the TensorFlow GradientTape [`tf.GradientTape`](https://www.tensorflow.org/api_docs/python/tf/GradientTape?version=stable) to trace operations for computing gradients later. 
@@ -564,7 +609,7 @@ print("Network output with activation: {}; network identity output: {}".format(o
 # 
 # First, we will look at how we can compute gradients using GradientTape and access them for computation. We define the simple function $ y = x^2$ and compute the gradient:
 
-# In[ ]:
+# In[21]:
 
 
 ### Gradient computation with GradientTape ###
@@ -585,7 +630,7 @@ assert dy_dx.numpy() == 6.0
 
 # In training neural networks, we use differentiation and stochastic gradient descent (SGD) to optimize a loss function. Now that we have a sense of how `GradientTape` can be used to compute and access derivatives, we will look at an example where we use automatic differentiation and SGD to find the minimum of $L=(x-x_f)^2$. Here $x_f$ is a variable for a desired value we are trying to optimize for; $L$ represents a loss that we are trying to  minimize. While we can clearly solve this problem analytically ($x_{min}=x_f$), considering how we can compute this using `GradientTape` sets us up nicely for future labs where we use gradient descent to optimize entire neural network losses.
 
-# In[ ]:
+# In[23]:
 
 
 ### Function minimization with automatic differentiation and SGD ###
@@ -602,15 +647,15 @@ x_f = 4
 # We will run SGD for a number of iterations. At each iteration, we compute the loss, 
 #   compute the derivative of the loss with respect to x, and perform the SGD update.
 for i in range(500):
-  with tf.GradientTape() as tape:
-    '''TODO: define the loss as described above'''
-    loss = # TODO
+    with tf.GradientTape() as tape:
+        '''TODO: define the loss as described above'''
+        loss = tf.math.square(x-x_f)# TODO
 
-  # loss minimization using gradient tape
-  grad = tape.gradient(loss, x) # compute the derivative of the loss with respect to x
-  new_x = x - learning_rate*grad # sgd update
-  x.assign(new_x) # update the value of x
-  history.append(x.numpy()[0])
+        # loss minimization using gradient tape
+        grad = tape.gradient(loss, x) # compute the derivative of the loss with respect to x
+        new_x = x - learning_rate*grad # sgd update
+        x.assign(new_x) # update the value of x
+        history.append(x.numpy()[0])
 
 # Plot the evolution of x as we optimize towards x_f!
 plt.plot(history)
@@ -621,3 +666,80 @@ plt.ylabel('x value')
 
 
 # `GradientTape` provides an extremely flexible framework for automatic differentiation. In order to back propagate errors through a neural network, we track forward passes on the Tape, use this information to determine the gradients, and then use these gradients for optimization using SGD.
+
+# ### to PyTorch
+
+# [Automatic differentiation](https://en.wikipedia.org/wiki/Automatic_differentiation)
+# is one of the most important parts of PyTorch and is the backbone of training with 
+# [backpropagation](https://en.wikipedia.org/wiki/Backpropagation). We will use the PyTorch AutoGrad [`torch.autograd`](https://pytorch.org/tutorials/beginner/blitz/autograd_tutorial.html) to trace operations for computing gradients later. 
+# 
+# > Neural networks (NNs) are a collection of nested functions that are executed on some input data. These functions are defined by parameters (consisting of weights and biases), which in PyTorch are stored in tensors.
+# >
+# > Training a NN happens in two steps:
+# >
+# > * **Forward Propagation**: In forward prop, the NN makes its best guess about the correct output. It runs the input data through each of its functions to make this guess.
+# > 
+# > * **Backward Propagation**: In backprop, the NN adjusts its parameters proportionate to the error in its guess. It does this by traversing backwards from the output, collecting the derivatives of the error with respect to the parameters of the functions (gradients), and optimizing the parameters using gradient descent. For a more detailed walkthrough of backprop, check out this [video from 3Blue1Brown](https://www.youtube.com/watch?v=tIeHLnjs5U8).
+# 
+# First, we will look at how we can compute gradients using `autograd` and ``requires_grad=True`` and access them for computation. We define the simple function $y = x^2$ and compute the gradient:
+
+# In[47]:
+
+
+### Gradient computation with autograd ###
+
+# y = x^2
+# Example: x = 3.0
+x = torch.tensor([3.], requires_grad=True)
+
+y = x**2
+
+external_grad = torch.tensor([1.])
+y.backward(gradient=external_grad)
+
+print(2*x == x.grad)
+
+
+# In training neural networks, we use differentiation and stochastic gradient descent (SGD) to optimize a loss function. Now that we have a sense of how `autograd` can be used to compute and access derivatives, we will look at an example where we use automatic differentiation and SGD to find the minimum of $L=(x-x_f)^2$. Here $x_f$ is a variable for a desired value we are trying to optimize for; $L$ represents a loss that we are trying to  minimize. While we can clearly solve this problem analytically ($x_{min}=x_f$), considering how we can compute this using `autograd` sets us up nicely for future labs where we use gradient descent to optimize entire neural network losses.
+
+# In[52]:
+
+
+### Function minimization with automatic differentiation and SGD ###
+
+# Initialize a random value for our initial x
+x = torch.rand([1], requires_grad=True)
+print("Initializing x={}".format(x.detach().numpy()))
+
+learning_rate = 1e-2 # learning rate for SGD
+history = []
+# Define the target value
+x_f = 4
+
+# We will run SGD for a number of iterations. At each iteration, we compute the loss, 
+#   compute the derivative of the loss with respect to x, and perform the SGD update.
+
+external_grad = torch.tensor([1.])
+
+
+for i in range(500):    
+    loss = (x-x_f)**2
+    loss.backward(gradient=external_grad)
+    with torch.no_grad():
+        x = x - learning_rate*x.grad
+    x.requires_grad=True
+    history.append(x.detach().numpy()[0])
+
+# Plot the evolution of x as we optimize towards x_f!
+plt.plot(history)
+plt.plot([0, 500],[x_f,x_f])
+plt.legend(('Predicted', 'True'))
+plt.xlabel('Iteration')
+plt.ylabel('x value')
+
+
+# In[ ]:
+
+
+
+

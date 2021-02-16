@@ -1,0 +1,14 @@
+name: mit_6S191
+channels:
+  - defaults
+dependencies:
+  - python=3.7
+  - tensorflow
+  - jupyter_contrib_nbextensions
+  - numpy
+  - matplotlib
+  - opencv
+  - torchvision
+  - tensorflow-gpu
+  - nb_conda
+prefix: /home/explore/miniconda3/envs/mit_6S191

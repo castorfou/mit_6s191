@@ -211,25 +211,25 @@ print(e_out)
 # x: input to the layer
 
 class OurDenseLayer(tf.keras.layers.Layer):
-  def __init__(self, n_output_nodes):
-    super(OurDenseLayer, self).__init__()
-    self.n_output_nodes = n_output_nodes
+    def __init__(self, n_output_nodes):
+        super(OurDenseLayer, self).__init__()
+        self.n_output_nodes = n_output_nodes
 
-  def build(self, input_shape):
-    d = int(input_shape[-1])
-#     print(d)
-    # Define and initialize parameters: a weight matrix W and bias b
-    # Note that parameter initialization is random!
-    self.W = self.add_weight("weight", shape=[d, self.n_output_nodes]) # note the dimensionality
-    self.b = self.add_weight("bias", shape=[1, self.n_output_nodes]) # note the dimensionality
+    def build(self, input_shape):
+        d = int(input_shape[-1])
+        #     print(d)
+        # Define and initialize parameters: a weight matrix W and bias b
+        # Note that parameter initialization is random!
+        self.W = self.add_weight("weight", shape=[d, self.n_output_nodes]) # note the dimensionality
+        self.b = self.add_weight("bias", shape=[1, self.n_output_nodes]) # note the dimensionality
 
-  def call(self, x):
-    '''TODO: define the operation for z (hint: use tf.matmul)'''
-    z = tf.add(tf.matmul(x, self.W), self.b) # TODO
+    def call(self, x):
+        '''TODO: define the operation for z (hint: use tf.matmul)'''
+        z = tf.add(tf.matmul(x, self.W), self.b) # TODO
 
-    '''TODO: define the operation for out (hint: use tf.sigmoid)'''
-    y = tf.sigmoid(z) # TODO
-    return y
+        '''TODO: define the operation for out (hint: use tf.sigmoid)'''
+        y = tf.sigmoid(z) # TODO
+        return y
 
 # Since layer parameters are initialized randomly, we will set a random seed for reproducibility
 tf.random.set_seed(1)
@@ -245,7 +245,7 @@ mdl.lab1.test_custom_dense_layer_output(y)
 
 # Conveniently, TensorFlow has defined a number of ```Layers``` that are commonly used in neural networks, for example a [```Dense```](https://www.tensorflow.org/api_docs/python/tf/keras/layers/Dense?version=stable). Now, instead of using a single ```Layer``` to define our simple neural network, we'll use the  [`Sequential`](https://www.tensorflow.org/versions/r2.0/api_docs/python/tf/keras/Sequential) model from Keras and a single [`Dense` ](https://www.tensorflow.org/versions/r2.0/api_docs/python/tf/keras/layers/Dense) layer to define our network. With the `Sequential` API, you can readily create neural networks by stacking together layers like building blocks. 
 
-# In[ ]:
+# In[13]:
 
 
 ### Defining a neural network using the Sequential API ###
@@ -264,7 +264,7 @@ model = Sequential()
 # Remember: dense layers are defined by the parameters W and b!
 # You can read more about the initialization of W and b in the TF documentation :) 
 # https://www.tensorflow.org/api_docs/python/tf/keras/layers/Dense?version=stable
-dense_layer = # TODO
+dense_layer = Dense(n_output_nodes) # TODO
 
 # Add the dense layer to the model
 model.add(dense_layer)
@@ -272,20 +272,20 @@ model.add(dense_layer)
 
 # That's it! We've defined our model using the Sequential API. Now, we can test it out using an example input:
 
-# In[ ]:
+# In[14]:
 
 
 # Test model with example input
 x_input = tf.constant([[1,2.]], shape=(1,2))
 
 '''TODO: feed input into the model and predict the output!'''
-model_output = # TODO
+model_output = model.predict(x_input)# TODO
 print(model_output)
 
 
 # In addition to defining models using the `Sequential` API, we can also define neural networks by directly subclassing the [`Model`](https://www.tensorflow.org/api_docs/python/tf/keras/Model?version=stable) class, which groups layers together to enable model training and inference. The `Model` class captures what we refer to as a "model" or as a "network". Using Subclassing, we can create a class for our model, and then define the forward pass through the network using the `call` function. Subclassing affords the flexibility to define custom layers, custom training loops, custom activation functions, and custom models. Let's define the same neural network as above now using Subclassing rather than the `Sequential` model.
 
-# In[ ]:
+# In[15]:
 
 
 ### Defining a model using subclassing ###
@@ -299,7 +299,7 @@ class SubclassModel(tf.keras.Model):
   def __init__(self, n_output_nodes):
     super(SubclassModel, self).__init__()
     '''TODO: Our model consists of a single Dense layer. Define this layer.''' 
-    self.dense_layer = '''TODO: Dense Layer'''
+    self.dense_layer = Dense(n_output_nodes)
 
   # In the call function, we define the Model's forward pass.
   def call(self, inputs):
@@ -310,7 +310,7 @@ class SubclassModel(tf.keras.Model):
 # 
 # 
 
-# In[ ]:
+# In[16]:
 
 
 n_output_nodes = 3
@@ -323,7 +323,7 @@ print(model.call(x_input))
 
 # Importantly, Subclassing affords us a lot of flexibility to define custom models. For example, we can use boolean arguments in the `call` function to specify different network behaviors, for example different behaviors during training and inference. Let's suppose under some instances we want our network to simply output the input, without any perturbation. We define a boolean argument `isidentity` to control this behavior:
 
-# In[ ]:
+# In[17]:
 
 
 ### Defining a model using subclassing and specifying custom behavior ###
@@ -332,23 +332,25 @@ from tensorflow.keras import Model
 from tensorflow.keras.layers import Dense
 
 class IdentityModel(tf.keras.Model):
+    # As before, in __init__ we define the Model's layers
+    # Since our desired behavior involves the forward pass, this part is unchanged
+    def __init__(self, n_output_nodes):
+        super(IdentityModel, self).__init__()
+        self.dense_layer = tf.keras.layers.Dense(n_output_nodes, activation='sigmoid')
 
-  # As before, in __init__ we define the Model's layers
-  # Since our desired behavior involves the forward pass, this part is unchanged
-  def __init__(self, n_output_nodes):
-    super(IdentityModel, self).__init__()
-    self.dense_layer = tf.keras.layers.Dense(n_output_nodes, activation='sigmoid')
-
-  '''TODO: Implement the behavior where the network outputs the input, unchanged, 
+    '''TODO: Implement the behavior where the network outputs the input, unchanged, 
       under control of the isidentity argument.'''
-  def call(self, inputs, isidentity=False):
-    x = self.dense_layer(inputs)
-    '''TODO: Implement identity behavior'''
+    
+    def call(self, inputs, isidentity=False):
+        x = self.dense_layer(inputs)
+        '''TODO: Implement identity behavior'''
+        if (isidentity): return inputs
+        return x
 
 
 # Let's test this behavior:
 
-# In[ ]:
+# In[20]:
 
 
 n_output_nodes = 3
@@ -356,8 +358,8 @@ model = IdentityModel(n_output_nodes)
 
 x_input = tf.constant([[1,2.]], shape=(1,2))
 '''TODO: pass the input into the model and call with and without the input identity option.'''
-out_activate = # TODO
-out_identity = # TODO
+out_activate = model.call(x_input, False) # TODO
+out_identity = model.call(x_input, True) # TODO
 
 print("Network output with activation: {}; network identity output: {}".format(out_activate.numpy(), out_identity.numpy()))
 
@@ -375,7 +377,7 @@ print("Network output with activation: {}; network identity output: {}".format(o
 # 
 # First, we will look at how we can compute gradients using GradientTape and access them for computation. We define the simple function $ y = x^2$ and compute the gradient:
 
-# In[ ]:
+# In[21]:
 
 
 ### Gradient computation with GradientTape ###
@@ -396,7 +398,7 @@ assert dy_dx.numpy() == 6.0
 
 # In training neural networks, we use differentiation and stochastic gradient descent (SGD) to optimize a loss function. Now that we have a sense of how `GradientTape` can be used to compute and access derivatives, we will look at an example where we use automatic differentiation and SGD to find the minimum of $L=(x-x_f)^2$. Here $x_f$ is a variable for a desired value we are trying to optimize for; $L$ represents a loss that we are trying to  minimize. While we can clearly solve this problem analytically ($x_{min}=x_f$), considering how we can compute this using `GradientTape` sets us up nicely for future labs where we use gradient descent to optimize entire neural network losses.
 
-# In[ ]:
+# In[23]:
 
 
 ### Function minimization with automatic differentiation and SGD ###
@@ -413,15 +415,15 @@ x_f = 4
 # We will run SGD for a number of iterations. At each iteration, we compute the loss, 
 #   compute the derivative of the loss with respect to x, and perform the SGD update.
 for i in range(500):
-  with tf.GradientTape() as tape:
-    '''TODO: define the loss as described above'''
-    loss = # TODO
+    with tf.GradientTape() as tape:
+        '''TODO: define the loss as described above'''
+        loss = tf.math.square(x-x_f)# TODO
 
-  # loss minimization using gradient tape
-  grad = tape.gradient(loss, x) # compute the derivative of the loss with respect to x
-  new_x = x - learning_rate*grad # sgd update
-  x.assign(new_x) # update the value of x
-  history.append(x.numpy()[0])
+        # loss minimization using gradient tape
+        grad = tape.gradient(loss, x) # compute the derivative of the loss with respect to x
+        new_x = x - learning_rate*grad # sgd update
+        x.assign(new_x) # update the value of x
+        history.append(x.numpy()[0])
 
 # Plot the evolution of x as we optimize towards x_f!
 plt.plot(history)
