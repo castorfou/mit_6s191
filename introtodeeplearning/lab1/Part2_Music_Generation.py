@@ -36,7 +36,7 @@
 # ## 2.1 Dependencies 
 # First, let's download the course repository, install dependencies, and import the relevant packages we'll need for this lab.
 
-# In[2]:
+# In[1]:
 
 
 # Import Tensorflow 2.0
